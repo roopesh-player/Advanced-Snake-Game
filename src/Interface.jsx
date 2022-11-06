@@ -1,4 +1,4 @@
-import React,{useState,useEffect} from 'react'
+import React,{useState,useEffect,useRef} from 'react'
 
 const SIZE=15;
 
@@ -69,11 +69,32 @@ const Interface = () => {
   const [snakeCells, setSnakeCells] = useState(new Set([Matrix[5][5]]));
   const [snake, setSnake] = useState(new LinkedList({row:5,col:5,val:Matrix[5][5]}));
   const [foodCell, setFoodCell] = useState(snake.head.value.val+5)
+  const [direction, setDirection] = useState("ArrowRight")
   useEffect(() => {
     document.onkeydown= e => {
-      movement(e);
+      setDirection(e.key);
     }
   },)
+  function useInterval(callback, delay) {
+    const savedCallback = useRef();
+  
+    // Remember the latest callback.
+    useEffect(() => {
+      savedCallback.current = callback;
+    }, [callback]);
+  
+    // Set up the interval.
+    useEffect(() => {
+      function tick() {
+        savedCallback.current();
+      }
+      if (delay !== null) {
+        let id = setInterval(tick, delay);
+        return () => clearInterval(id);
+      }
+    }, [delay]);
+  }
+  useInterval(()=>{movement()},300);
   function gameOver(){
     // console.log("IN gameover function")
     setSnake(new LinkedList({row:5,col:5,val:Matrix[5][5]}));
@@ -98,14 +119,14 @@ const Interface = () => {
     }
     setFoodCell(newFoodCell)
   }
-  function movement(event){
+  function movement(){
     console.log("EVENT")
-    console.log(event.key==="ArrowRight");
+    // console.log(event.key==="ArrowRight");
     const currHead={
       row:snake.head.value.row,
       col:snake.head.value.col,
     };
-    const nextHeadCord=nextHeadCordinates(event.key,currHead);
+    const nextHeadCord=nextHeadCordinates(direction,currHead);
     console.log("checking bounds");
     if(checkBounds(nextHeadCord)){
       console.log("out of bounds");

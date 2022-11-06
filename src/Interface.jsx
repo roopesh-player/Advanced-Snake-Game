@@ -68,8 +68,10 @@ const Interface = () => {
   const Matrix = createMatrix();
   const [snakeCells, setSnakeCells] = useState(new Set([Matrix[5][5]]));
   const [snake, setSnake] = useState(new LinkedList({row:5,col:5,val:Matrix[5][5]}));
-  const [foodCell, setFoodCell] = useState(snake.head.value.val+5)
-  const [direction, setDirection] = useState("ArrowRight")
+  const [foodCell, setFoodCell] = useState(snake.head.value.val+4);
+  const [direction, setDirection] = useState("ArrowRight");
+  const [score, setScore] = useState(0);
+  const [reversePill, setReversePill] = useState(false);
   useEffect(() => {
     document.onkeydown= e => {
       setDirection(e.key);
@@ -98,9 +100,12 @@ const Interface = () => {
   function gameOver(){
     // console.log("IN gameover function")
     setSnake(new LinkedList({row:5,col:5,val:Matrix[5][5]}));
+    setScore(0);
+    setDirection("ArrowRight");
     // console.log("SNAKE");
     // console.log(snake.head.value);
     setSnakeCells(new Set([Matrix[5][5]]));
+    setFoodCell(Matrix[5][5]+4);
     // console.log(snakeCells);
   }
   function allotNewFoodCell(){
@@ -117,6 +122,8 @@ const Interface = () => {
         continue;
       break;
     }
+    const isReversePill=Math.random()<0.9;
+    setReversePill(isReversePill);
     setFoodCell(newFoodCell)
   }
   function movement(){
@@ -155,6 +162,7 @@ const Interface = () => {
       const newsnakeCells=snakeCells;
       newsnakeCells.add(nextHeadVal);
       setSnakeCells(new Set(newsnakeCells));
+      setScore(score+1);
       allotNewFoodCell();
     }
     //if not eaten food
@@ -184,13 +192,14 @@ const Interface = () => {
 
   return (
     <div style={{background:"rgb(61,61,59)",height:"100vh"}}>
+      <h1 className='text-center text-info p-3'>Score : {score}</h1>
       <div className='d-flex justify-content-center' >
       <div>
       {Matrix.map((row,rowID) => (
         <div key={rowID} className="row">{
         row.map((cell,cellID) =>(
           <div className='col-1 border border-white' style={{height:"35px",width:"35px",backgroundColor:`${
-            snakeCells.has(cell)?"lime":(foodCell===cell?"purple":"aqua")
+            snakeCells.has(cell)?"lime":(foodCell===cell?(reversePill?"black":"purple"):"aqua")
           }`}} key={cellID}></div>
         ))
         }</div>

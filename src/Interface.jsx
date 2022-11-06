@@ -67,8 +67,8 @@ const Interface = () => {
 
   const Matrix = createMatrix();
   const [snakeCells, setSnakeCells] = useState(new Set([Matrix[5][5]]));
-  // const [cnt,setcnt]=useState(1);
   const [snake, setSnake] = useState(new LinkedList({row:5,col:5,val:Matrix[5][5]}));
+  const [foodCell, setFoodCell] = useState(snake.head.value.val+5)
   useEffect(() => {
     document.onkeydown= e => {
       movement(e);
@@ -81,6 +81,22 @@ const Interface = () => {
     // console.log(snake.head.value);
     setSnakeCells(new Set([Matrix[5][5]]));
     // console.log(snakeCells);
+  }
+  function allotNewFoodCell(){
+    const max = SIZE*SIZE;
+    const min=1;
+    let newFoodCell;
+    // In practice, this will never be a time-consuming operation. Even
+    // in the extreme scenario where a snake is so big that it takes up 90%
+    // of the board (nearly impossible), there would be a 10% chance of generating
+    // a valid new food cell--so an average of 10 operations: trivial.
+    while (true) {
+      newFoodCell = Math.floor(Math.random() * (max - min + 1) + min);
+      if (snakeCells.has(newFoodCell) || foodCell === newFoodCell)
+        continue;
+      break;
+    }
+    setFoodCell(newFoodCell)
   }
   function movement(event){
     console.log("EVENT")
@@ -109,7 +125,19 @@ const Interface = () => {
     currHeadNode.next=nextHead;
     console.log("added new node");
     console.log(nextHeadVal);
+    //if eaten food
+    if(nextHeadVal===foodCell){
+      //eaten food
+      snake.head.next=nextHead;
+      snake.head=snake.head.next;
+      //grown snake
+      const newsnakeCells=snakeCells;
+      newsnakeCells.add(nextHeadVal);
+      setSnakeCells(new Set(newsnakeCells));
+      allotNewFoodCell();
+    }
     //if not eaten food
+    else{
     console.log("removing tail");
     const currTailVal=snake.tail.value.val;
     const nextTail=snake.tail.next;
@@ -127,6 +155,7 @@ const Interface = () => {
     console.log(snakeCells);
     // console.log("CNT");
     // console.log(cnt);
+    }
   }
   
 
@@ -139,7 +168,9 @@ const Interface = () => {
       {Matrix.map((row,rowID) => (
         <div key={rowID} className="row">{
         row.map((cell,cellID) =>(
-          <div className='col-1 border border-white' style={{height:"35px",width:"35px",backgroundColor:`${snakeCells.has(cell)?"lime":"aqua"}`}} key={cellID}></div>
+          <div className='col-1 border border-white' style={{height:"35px",width:"35px",backgroundColor:`${
+            snakeCells.has(cell)?"lime":(foodCell===cell?"purple":"aqua")
+          }`}} key={cellID}></div>
         ))
         }</div>
       ))}
